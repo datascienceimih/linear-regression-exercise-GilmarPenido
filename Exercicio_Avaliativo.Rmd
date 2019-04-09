@@ -1,0 +1,315 @@
+---
+title: "Atividade Avaliativa"
+output: pdf_document
+
+#Ciência de Dados
+#Grupo: Marcos Junior Magalhães dos Santos, Gilmar Penido de Souza
+---
+install.packages("ISLR")
+install.packages("MASS")
+install.packages("dplyr")
+install.packages("ggplot2")
+install.packages("readr")
+install.packages("texreg")
+
+library(readr)
+library(MASS)
+library(ISLR)
+library(dplyr)
+library(texreg)
+library(ggplot2)
+
+#Exercício 8 (a)
+
+data("Auto")
+head(Auto)
+
+help(Auto)
+
+model1 = lm(mpg ~ horsepower, data=Auto)
+summary(model1)
+
+##I- Sim, existe uma relação entre o preditor e a resposta,
+#pois quanto mais cavalos maior sera consulmo.
+
+##II- P- valor está proximo de 0 sendo assim considerada uma relação forte.
+
+##III- Negativo.
+
+##IV
+prev = data.frame(horsepower = 98)
+
+predict(model1, prev)  # mpg prevsito
+predict(model1, prev, interval = "confidence")  # Confiança
+predict(model1, prev, interval = "prediction")  # Intervalo
+
+
+## (B)
+
+plot(Auto$horsepower, Auto$mpg)
+abline(fit.lm, col="blue")
+
+## (C)
+
+par(mfrow=c(2,2))
+plot(fit.lm)
+
+# Quando ajustados mostra que nao há relação linear entre residuals e Fitted
+
+#Exercício 9 (a)
+
+require(ISLR)
+data(Auto)
+pairs(Auto)
+
+##(B)
+
+cor(subset(Auto, select=-name))
+
+##(C)
+
+model1 = lm(mpg~.-name, data=Auto)
+summary(model1)
+
+#I Existe relação entre preditores e resposta
+
+#II weight, year, origin e displacement têm relações significantes
+
+#III Para os carros mais antigos o seu consumo mpg seja maior
+
+##(D)
+
+par(mfrow=c(2,2))
+plot(model1)
+
+# Evidencia sem relação linear
+# 14 tem alta Leverage
+
+#Exercício 10 (a)
+
+data(Carseats)
+head(Carseats)
+fit.lm = lm(Sales ~ Price + Urban + US, data=Carseats)
+summary(fit.lm)
+
+#(B)
+#Sales: Milhares de vendas em cada local.
+#Prince: Preço por assentos de carro em cada local
+#Urbano: Não / Sim por localização 
+#Us: Não / Sim por localização
+
+#Prince: Queda de -0.054459 sobre as vendas com aumento do dolar. (Significante)
+
+#UrbanYes (-0,021916): As vendas são mais baixas para 
+#locais urbanos - (não significantes)
+
+# USYes (1.200573): As vendas são 1.201 mais altas nos EUA (significante)
+
+#(C)
+
+#Sales = 13.043 - 0.054 x Price - 0.022 x UrbanYes + 1.201 x USYes
+
+#(D)
+
+#Para Price e USYes ambos tem o coeficientes com valores de P baixos)
+
+#(E)
+
+fit.lm1 <- lm(Sales ~ Price + US, data=Carseats)
+summary(fit.lm1)
+
+#(F)
+
+
+#fit.lm (Preço, Urbano, EUA):
+ #RSE = 2,472
+ #R ^ 2 = 0,2393
+
+#fit.lm1 (preço, EUA):
+  # RSE = 2,469
+  # R ^ 2 = 0,2393
+
+#fit.lm1 tem um valor de RSE um pouco melhor (menor) e uma variável preditor a menos.
+
+#(G)
+
+confint(fit.lm1)
+
+#(H)
+
+par(mfrow=c(2,2))
+
+# Residuals e fitted não mostra outliers forte 
+plot(fit.lm1)  
+par(mfrow=c(1,1))
+
+#Residuos estudados dentro de -3 a 3
+plot(predict(fit.lm1), rstudent(fit.lm1))
+
+# Carro de carga
+require(car)
+
+# Nenhuma evidência de outliers
+Plot(fit.lm1, main="Plot")
+leveragePlots(fit.lm1)
+plot(hatvalues(fit.lm1))
+
+# average obs leverage (p+1)/n = (2+1)/400 = 0.0075
+# Os dados podem ter alguns problemas de alavancagem (leverage)
+
+#Exercício 13 (a)
+
+set.seed(1)
+x = rnorm(100)
+
+#(B)
+
+eps = rnorm(100, sd=0.25^0.5)
+
+#(C)
+y = -1 + 0.5*x + eps  
+length(y)
+
+#Comprimento = 100
+#Valor de valores de β0 = -1$
+#β1 = 0,5 $
+
+#(D)
+
+plot(x,y)
+
+# X e Y estão aparentemente correlacionados
+
+#(E)
+
+fit.lm = lm(y ~ x)
+summary(fit.lm)
+
+# β0= -1.019$ e β1= 0.499$, estimados que estão próximos dos betas reais usados para gerar y 
+
+#(F)
+
+plot(x,y)
+abline(-1, 0.5, col="blue")  
+abline(fit.lm, col="red")    
+legend(x = c(0,2.7),
+       y = c(-2.5,-2),
+       legend = c("População", "model fit"),
+       col = c("blue","red"), lwd=4 )
+#(G)
+
+fit.lm1 <- lm(y~x+I(x^2))
+summary(fit.lm1)
+
+# Nenhuma evidência de melhor ajuste com base no alto valor de p
+#β1 é o mais distante do valor real
+
+#(H)
+
+eps2 = rnorm(100, sd=0.1)  
+y2 = -1 + 0.5*x + eps2
+fit.lm2 = lm(y2 ~ x)
+summary(fit.lm2)
+plot(x, y2)
+abline(-1, 0.5, col="blue")  
+abline(fit.lm2, col="red")    
+legend(x = c(-2,-0.5),
+       y = c(-0.5,0),
+       legend = c("População", "Ajuste"),
+       col = c("blue","red"), lwd=2 )
+
+#O ajuste para y já era muito bom, portanto as estimativas 
+#de coef são praticamente as mesmas para o epsilon.
+#No entanto, os valores de RSE e R ^ 2 são muito melhores.
+
+#(i)
+
+eps3 = rnorm(100, sd=1) 
+y3 = -1 + 0.5*x + eps3
+fit.lm3 = lm(y3 ~ x)
+summary(fit.lm3)
+plot(x, y3)
+abline(-1, 0.5, col="blue")   
+abline(fit.lm3, col="red")    
+legend(x = c(0,2),
+       y = c(-4,-3),
+       legend = c("População", "Ajuste"),
+       col = c("blue","red"), lwd=4 )
+
+#Estimativas de coeficientes são mais distintas do valor real 
+#"mas não muito" e os valores de RSE e R ^ 2 são piores
+
+#(j)
+
+confint(fit.lm)
+confint(fit.lm2)
+confint(fit.lm3)
+
+#Intervalos de confiança são mais rigorosos para populações originais
+#com menor variância
+
+#Exercício 15 (a)
+
+data(Boston)
+head(Boston)
+Boston$chas <- factor(Boston$chas, labels = c("N","Y"))
+names(Boston)[-1]  
+
+#Extraindo p valor do objeto de modelo
+
+lmp = function (modelobject) {
+  if (class(modelobject) != "lm") 
+    stop("Not an object of class 'lm' ")
+  f = summary(modelobject)$fstatistic
+  p = pf(f[1],f[2],f[3],lower.tail=F)
+  attributes(p) = NULL
+  return(p)
+}
+results = combn(names(Boston), 2, 
+                 function(x) { lmp(lm(Boston[, x])) }, 
+                 simplify = FALSE)
+vars = combn(names(Boston), 2)
+names(results) = paste(vars[1,],vars[2,],sep="~")
+results[1:13]  
+
+
+#Somente o preditor chas não foi significativo 
+
+#(b)
+fit.lm = lm(crim~., data=Boston)
+summary(fit.lm)
+
+#Pode rejeitar a hipótese nula para os seguintes: zn, nox, dis, rad, black
+#lstat, medv
+
+#(c)
+
+# Menos preditores têm impacto estatisticamente significativo 
+#quando dada a presença de outros preditores.
+
+resultado = combn(names(Boston), 2, 
+                 function(x) { coefficients(lm(Boston[, x])) }, 
+                 simplify = FALSE)
+(coef.uni <- unlist(resultado)[seq(2,26,2)])
+(coef.multi <- coefficients(fit.lm)[-1])
+plot(coef.uni, coef.multi)
+
+#Estimativas de coeficientes estão muito longe para (nox)
+
+#(d)
+
+summary(lm(crim~poly(zn,3), data=Boston))      
+summary(lm(crim~poly(indus,3), data=Boston))   
+summary(lm(crim~poly(nox,3), data=Boston))     
+summary(lm(crim~poly(rm,3), data=Boston))      
+summary(lm(crim~poly(age,3), data=Boston))     
+summary(lm(crim~poly(dis,3), data=Boston))     
+summary(lm(crim~poly(rad,3), data=Boston))     
+summary(lm(crim~poly(tax,3), data=Boston))    
+summary(lm(crim~poly(ptratio,3), data=Boston))
+summary(lm(crim~poly(black,3), data=Boston))   
+summary(lm(crim~poly(lstat,3), data=Boston))   
+summary(lm(crim~poly(medv,3), data=Boston))   
+
+#Sim, há evidências de associação não linear para muitos dos preditores.
+
